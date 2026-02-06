@@ -60,46 +60,37 @@ def _normalize_recipients(value) -> List[str]:
     return [addr for addr in value if addr]
 
 
-def forward_messages(reader: O365MailReader, messages: List[dict]):
+def forward_message(reader: O365MailReader, msg: dict):
+    """Forward a single message via SMTP"""
     recipients = _normalize_recipients(SMTP_TO)
     if not ENABLE_SMTP_FORWARD or not SMTP_HOST or not recipients:
         return
 
-    for msg in messages:
-        message_id = msg.get("id")
-        if not message_id:
-            continue
+    message_id = msg.get("id")
+    if not message_id:
+        return
 
-        # Log attachment info if present
-        if msg.get("hasAttachments"):
-            try:
-                attachments = reader.get_attachments(message_id)
-                if attachments:
-                    att_names = [att.get("name", "unknown") for att in attachments]
-                    print(f"   📎 Attachments ({len(attachments)}): {', '.join(att_names)}")
-            except Exception as att_err:
-                print(f"Failed to retrieve attachment info: {att_err}")
+    # Get the raw MIME content of the message (preserves everything as-is)
+    try:
+        mime_content = reader.get_message_mime(message_id)
+    except Exception as mime_err:
+        print(f"❌ Failed to retrieve message MIME: {mime_err}")
+        return
 
-        # Get the raw MIME content of the message (preserves everything as-is)
-        try:
-            mime_content = reader.get_message_mime(message_id)
-        except Exception as mime_err:
-            print(f"Failed to retrieve message MIME: {mime_err}")
-            continue
-
-        try:
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as smtp:
-                if SMTP_USE_TLS:
-                    smtp.starttls()
-                if SMTP_USERNAME:
-                    smtp.login(SMTP_USERNAME, SMTP_PASSWORD)
-                smtp.sendmail(SMTP_FROM, recipients, mime_content)
-        except Exception as smtp_err:
-            print(f"SMTP forward failed: {smtp_err}")
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as smtp:
+            if SMTP_USE_TLS:
+                smtp.starttls()
+            if SMTP_USERNAME:
+                smtp.login(SMTP_USERNAME, SMTP_PASSWORD)
+            smtp.sendmail(SMTP_FROM, recipients, mime_content)
+            print(f"✅ Forwarded via SMTP")
+    except Exception as smtp_err:
+        print(f"❌ SMTP forward failed: {smtp_err}")
 
 
 def check_for_new_emails(reader: O365MailReader) -> List[dict]:
-    """Check for new emails and display them"""
+    """Check for new emails, display them, and forward each one immediately"""
     try:
         # Get access token silently
         if not reader.access_token:
@@ -108,7 +99,7 @@ def check_for_new_emails(reader: O365MailReader) -> List[dict]:
         # Get only new messages since last run
         messages = reader.get_new_messages(folder="inbox", limit=50)
 
-        # Display only new messages with minimal info
+        # Process each message: display info and forward immediately
         for msg in messages:
             sender = msg.get("from", {}).get("emailAddress", {}).get("address", "Unknown")
             to_addr = msg.get("toRecipients", [{}])[0].get("emailAddress", {}).get("address", "Unknown") if msg.get("toRecipients") else "Unknown"
@@ -131,6 +122,9 @@ def check_for_new_emails(reader: O365MailReader) -> List[dict]:
                 else:
                     print(f"   Has attachments: Yes")
 
+            # Forward this message immediately
+            forward_message(reader, msg)
+
         return messages
 
     except Exception as e:
@@ -151,11 +145,10 @@ def main():
         while True:
             run_count += 1
 
-            # Check for new emails
+            # Check for new emails (forwards happen inside this function now)
             messages = check_for_new_emails(reader)
             if messages:
                 new_emails_count += len(messages)
-                forward_messages(reader, messages)
 
             # Exit if not in continuous loop mode
             if not ENABLE_CONTINUOUS_LOOP:
