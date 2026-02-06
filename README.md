@@ -239,6 +239,23 @@ Check the console output for detailed error messages.
 - [Outlook Mail API](https://docs.microsoft.com/en-us/graph/api/resources/message)
 - [Azure AD App Registration](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app)
 
+## Disclaimer
+
+⚠️ **USE AT YOUR OWN RISK**
+
+This software is provided "as-is" without warranty of any kind, express or implied. The author(s) shall not be held liable for any damages, data loss, security breaches, or other issues arising from the use of this software.
+
+**Important notices:**
+
+- This project is **NOT authorized, endorsed, or vetted by Microsoft Corporation**
+- This is an independent, community-developed tool that uses publicly available Microsoft Graph APIs
+- You are solely responsible for ensuring compliance with your organization's policies, Microsoft's Terms of Service, and applicable laws and regulations
+- The author(s) make no guarantees about the reliability, security, or suitability of this code for any purpose
+- Before using in production, thoroughly review and test the code in a safe environment
+- You are responsible for securing your credentials and protecting sensitive data
+
+By using this software, you acknowledge that you understand these risks and accept full responsibility for any consequences.
+
 ## License
 
 This project is provided as-is for educational purposes.

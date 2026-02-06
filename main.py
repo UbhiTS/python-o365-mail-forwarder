@@ -4,6 +4,15 @@ Tracks last email and only retrieves new ones on subsequent runs
 Runs in a continuous loop checking for new emails at configurable intervals
 Minimal output - only shows new emails as they arrive
 Optional SMTP forwarding for new emails
+
+DISCLAIMER:
+    This software is provided "as-is" without warranty of any kind.
+    The author(s) shall not be held liable for any damages, data loss,
+    security breaches, or other issues arising from the use of this software.
+    
+    This project is NOT authorized, endorsed, or vetted by Microsoft Corporation.
+    Use at your own risk. You are solely responsible for ensuring compliance
+    with your organization's policies and applicable laws.
 """
 
 import os
