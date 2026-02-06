@@ -11,7 +11,7 @@ This Python program reads messages from an Outlook 365 mailbox using app-only au
 - ✓ Raw MIME forwarding - emails are forwarded exactly as received
 - ✓ Attachment support - displays attachment names in console
 - ✓ Minimal console output showing From, To, Subject, and Attachments
-- ✓ Configurable via `config.py`
+- ✓ Configurable via `.env` environment file
 
 ## Prerequisites
 
@@ -117,7 +117,8 @@ Press `Ctrl+C` to stop the monitor.
 📧 From: sender@example.com
    To: recipient@example.com
    Subject: Important Document
-   Attachments (2): document.pdf, image.png
+   📎 Attachments (2): document.pdf, image.png
+   ✅ Forwarded via SMTP
 ================================================================================
 ```
 
@@ -134,8 +135,13 @@ When `ENABLE_SMTP_FORWARD = True`, emails are forwarded using raw MIME content, 
 ```python
 from mail_reader import O365MailReader
 
-# Initialize reader
-reader = O365MailReader()
+# Initialize reader with credentials
+reader = O365MailReader(
+    client_id="your-client-id",
+    tenant_id="your-tenant-id",
+    client_secret="your-client-secret",
+    mailbox_email="mailbox@example.com"
+)
 
 # Get access token
 reader.get_access_token()
